@@ -4,7 +4,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 import re
 root=Path(__file__).parent/'public'
-expected={'index.html','styles.css','_headers','robots.txt','privacy/index.html','terms/index.html','contact/index.html','404.html'}
+expected={'index.html','styles.css','favicon.svg','_headers','robots.txt','privacy/index.html','terms/index.html','contact/index.html','404.html'}
 actual={p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
 assert actual==expected, f'Deploy file allowlist mismatch: {actual^expected}'
 class Links(HTMLParser):
@@ -23,5 +23,7 @@ for p in root.rglob('*'):
  assert not re.search(r'-----BEGIN .*PRIVATE KEY|AIza[\w-]{30,}|gh[pousr]_[A-Za-z0-9]{20,}|GOCSPX-|ya29\.|C:\\Users\\|/home/denis|TODO_CONTACT',text),'Sensitive or unfinished content'
  if p.suffix=='.html':
   assert '<meta name="viewport"' in text and '<title>' in text
+  assert 'property="og:title"' in text and 'name="description"' in text and 'rel="canonical"' in text
+  assert 'DENISAM' in text and 'id="main"' in text
   Links().feed(text)
 print(f'PASS: {len(actual)} deploy files; static-only, internal links and targeted content checks')
